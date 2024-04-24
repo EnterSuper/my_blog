@@ -10,10 +10,11 @@ keywords:
 author: EnterSuper
 language: zh-CN
 timezone: ''
+email: entersuperpjk@gmail.com
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://example.com
+url: https://entersuper.github.io/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -104,3 +105,4 @@ deploy:
   type: git
   repo: https://github.com/EnterSuper/EnterSuper.github.io.git
   branch: main
+

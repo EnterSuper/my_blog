@@ -5,7 +5,7 @@ tags:
 ---
 
 ### 题意
-<img src="https://gitee.com/entersuper/blog_picture/raw/master/中位数.png">
+<img src="https://raw.githubusercontent.com/EnterSuper/blog_picture/main/中位数.png">
 
 ### 思路
 - 一开始显然是想维护一个有序序列。但是插入一个数时的开销太大，超时严重.

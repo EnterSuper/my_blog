@@ -2,6 +2,8 @@
 title: xtu程设:中位数
 date: 2024-04-26 14:05:20
 tags:
+cover: https://raw.githubusercontent.com/EnterSuper/blog_picture/main/头像.jpg
+top_img: https://raw.githubusercontent.com/EnterSuper/blog_picture/main/xtu_oj.png
 ---
 
 ### 题意

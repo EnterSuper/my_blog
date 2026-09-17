@@ -1,0 +1,60 @@
+# --------------------------------------
+# Butterfly 主题覆盖配置（浅色极简，聚焦论文精读/学习笔记）
+# 只写与主题默认值不同的项，其余都用 themes/butterfly/_config.yml 的默认值
+# 完整选项说明: https://butterfly.js.org/
+# --------------------------------------
+
+menu:
+  首页: / || fas fa-home
+  归档: /archives/ || fas fa-archive
+  分类: /categories/ || fas fa-folder-open
+  标签: /tags/ || fas fa-tags
+  关于: /about/ || fas fa-user
+
+# 首页大图压缩成较矮的横幅，不要占满全屏，保持内容优先
+index_top_img_height: 400px
+
+subtitle:
+  enable: true
+  effect: false
+  source: false
+  sub: 论文精读 · 学习笔记
+
+# 首页文章排版：封面在上，信息在下，统一整洁的卡片网格
+index_layout: 4
+
+code_blocks:
+  theme: light
+  macStyle: true
+
+aside:
+  card_author:
+    enable: true
+    button:
+      enable: true
+      icon: fab fa-github
+      text: Follow Me
+      link: https://github.com/EnterSuper
+  # 去掉默认的占位公告卡片
+  card_announcement:
+    enable: false
+
+# 本地搜索（配合 hexo-generator-searchdb），方便以后笔记多了能搜到
+search:
+  use: local_search
+  local_search:
+    preload: true
+
+# 暂不需要分享按钮，保持干净
+share:
+  use:
+
+# 暂不接入评论系统
+comments:
+  use:
+
+math:
+  use: katex
+  per_page: true
+  katex:
+    copy_tex: true

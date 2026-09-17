@@ -5,8 +5,8 @@
 # Site
 title: EnterSuper
 subtitle: 我在
-description: 
-keywords: 
+description: 论文精读与学习笔记，记录读论文、学技术过程中的思考和总结。
+keywords: 论文精读, 学习笔记, 技术博客
 author: EnterSuper
 language: zh-CN
 timezone: ''
@@ -41,7 +41,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 syntax_highlighter: highlight.js
@@ -55,6 +55,18 @@ prismjs:
   preprocess: true
   line_number: true
   tab_replace: ''
+
+# hexo-renderer-markdown-it options
+markdown:
+  preset: default
+  render:
+    html: true
+    breaks: true
+    linkify: true
+    typographer: true
+  images:
+    # Resolve bare `![](image.png)` refs against the post's asset folder (post_asset_folder: true above)
+    post_asset: true
 
 # Home page setting
 # path: Root path for your blogs index page. (default = '')

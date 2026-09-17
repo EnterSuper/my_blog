@@ -67,6 +67,9 @@ markdown:
   images:
     # Resolve bare `![](image.png)` refs against the post's asset folder (post_asset_folder: true above)
     post_asset: true
+  # Renders $...$ / $$...$$ into KaTeX markup at build time, so themes only need KaTeX's CSS
+  plugins:
+    - '@renbaoshuo/markdown-it-katex'
 
 # Home page setting
 # path: Root path for your blogs index page. (default = '')

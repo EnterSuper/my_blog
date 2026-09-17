@@ -21,17 +21,21 @@ function listPosts () {
     const raw = fs.readFileSync(full, 'utf8')
     const { data } = matter(raw)
     const localImages = findLocalImageRefs(raw).size
+    // front matter 没写 date 时用文件修改时间兜底，和 Hexo 构建时的行为一致
+    const date = data.date ? new Date(data.date) : fs.statSync(full).mtime
     return {
       slug,
       title: data.title || slug,
-      date: data.date ? String(data.date) : '',
+      date: date.toISOString(),
       categories: data.categories || '',
       tags: Array.isArray(data.tags) ? data.tags : (data.tags ? [data.tags] : []),
       cover: data.cover || '',
       top_img: data.top_img || '',
       localImages
     }
-  }).sort((a, b) => (a.date < b.date ? 1 : -1))
+  // 按时间戳倒序。不能比较 String(date)：JS 日期字符串以星期开头
+  // （"Thu Apr 25..." / "Fri Sep 18..."），字符串比较会变成按星期排序。
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
 function updatePostMeta (slug, fields) {

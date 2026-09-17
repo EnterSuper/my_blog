@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>博客发布面板</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>我的文章</h1>
+      <div class="new-post">
+        <input id="new-title" placeholder="新文章标题">
+        <div class="new-post-row">
+          <select id="new-type">
+            <option value="paper">论文精读</option>
+            <option value="note">学习笔记</option>
+          </select>
+          <input id="new-tags" placeholder="标签（逗号分隔，可留空）">
+        </div>
+        <button id="btn-new">新建</button>
+      </div>
+      <div id="new-post-result"></div>
+      <div id="post-list" class="post-list">加载中...</div>
+    </aside>
+    <main class="detail" id="detail">
+      <p class="empty-hint">从左边选一篇文章</p>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

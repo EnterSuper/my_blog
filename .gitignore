@@ -3,6 +3,8 @@ Thumbs.db
 db.json
 *.log
 node_modules/
-public/
+# 加前导斜杠只忽略 Hexo 的输出目录；写成 public/ 会匹配任意层级的
+# 同名目录，把 tools/studio/public/ 这类源码也一起忽略掉
+/public/
 .deploy*/
 _multiconfig.yml

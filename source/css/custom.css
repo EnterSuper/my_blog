@@ -1,0 +1,743 @@
+/* =========================================================
+   EnterSuper — 整站视觉重写
+   方向：暖纸底 / 朱红强调 / 4px 直角 / 硬投影（零模糊）/ 衬线标题
+   覆盖 Butterfly 默认的大圆角 + 虚化阴影 + 蓝色系
+   ========================================================= */
+
+:root {
+  --es-paper:        #f4f2ec;
+  --es-card:         #fffdf7;
+  --es-card-hover:   #ffffff;
+  --es-ink:          #1b1e1c;
+  --es-ink-2:        #4f5653;
+  --es-ink-3:        #6d7570;
+  --es-accent:       #c23b22;
+  --es-accent-hover: #a32d17;
+  --es-accent-soft:  rgba(194, 59, 34, 0.08);
+  --es-teal:         #0b6e66;
+  --es-line:         rgba(27, 30, 28, 0.16);
+  --es-line-soft:    rgba(27, 30, 28, 0.09);
+  --es-radius:       4px;
+  --es-shadow:       3px 3px 0 rgba(27, 30, 28, 0.07);
+  --es-shadow-hover: 5px 5px 0 rgba(194, 59, 34, 0.13);
+
+  --es-serif: Georgia, 'Noto Serif SC', 'Songti SC', SimSun, serif;
+  --es-sans:  -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+              'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --es-mono:  'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* —— 覆盖 Butterfly 自己的变量，一次性换掉全站配色 —— */
+  --global-bg: var(--es-paper);
+  --global-font-size: 15px;
+  --font-color: var(--es-ink);
+  --card-bg: var(--es-card);
+  --card-meta: var(--es-ink-3);
+  --sidebar-bg: var(--es-paper);
+  --text-highlight-color: var(--es-ink);
+  --blockquote-color: var(--es-ink-2);
+  --blockquote-bg: var(--es-accent-soft);
+  --btn-bg: var(--es-accent);
+  --btn-hover-color: var(--es-accent-hover);
+  --btn-color: #fffdf7;
+  --text-bg-hover: var(--es-accent-soft);
+  --pseudo-hover: var(--es-accent);
+  --headline-presudo: var(--es-accent);
+  --scrollbar-color: var(--es-accent);
+  --default-bg-color: var(--es-paper);
+  --toc-link-color: var(--es-ink-2);
+  --card-box-shadow: var(--es-shadow);
+  --card-hover-box-shadow: var(--es-shadow-hover);
+  --hr-border: var(--es-line);
+  --hr-before-color: var(--es-accent);
+  --light-grey: var(--es-line-soft);
+  --search-bg: var(--es-card);
+  --search-input-color: var(--es-ink);
+  --search-a-color: var(--es-ink);
+}
+
+html[data-theme='dark'] {
+  --es-paper:        #16181a;
+  --es-card:         #1d2023;
+  --es-card-hover:   #23272a;
+  --es-ink:          #e8e6e0;
+  --es-ink-2:        #b3b8b5;
+  --es-ink-3:        #8b918e;
+  --es-accent:       #e0664a;
+  --es-accent-hover: #f0866a;
+  --es-accent-soft:  rgba(224, 102, 74, 0.12);
+  --es-teal:         #3fa89e;
+  --es-line:         rgba(232, 230, 224, 0.18);
+  --es-line-soft:    rgba(232, 230, 224, 0.10);
+  --es-shadow:       3px 3px 0 rgba(0, 0, 0, 0.30);
+  --es-shadow-hover: 5px 5px 0 rgba(224, 102, 74, 0.22);
+}
+
+/* ---------- 基础 ---------- */
+body {
+  background: var(--es-paper);
+  font-family: var(--es-sans);
+  color: var(--es-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 全站去圆角：Butterfly 默认圆润，这里改成硬朗的 4px */
+#page-header,
+#content-inner .card-widget,
+#recent-posts .recent-post-item,
+:is(#aside-content, .es-rail) .card-widget,
+.layout > div:first-child,
+#post,
+#page,
+#archive,
+#tag,
+#category,
+.button,
+.post_cover,
+.post_cover img,
+#footer,
+figure.highlight,
+.note,
+.tag-cloud-list a,
+#article-container img {
+  border-radius: var(--es-radius) !important;
+}
+
+/* ---------- 顶栏 ---------- */
+#page-header {
+  background: var(--es-paper) !important;
+  border-bottom: 1px solid var(--es-line);
+}
+
+#page-header.not-top-img #nav {
+  background: transparent;
+}
+
+#nav {
+  padding: 0 1.5rem;
+}
+
+#nav .site-name {
+  font-family: var(--es-serif);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--es-ink);
+}
+
+#nav #menus .menus_item a,
+#nav .site-page {
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--es-ink-2);
+}
+
+#nav #menus .menus_item a:hover,
+#nav .site-page:hover {
+  color: var(--es-accent);
+}
+
+/* ---------- 首页文章卡片流 ---------- */
+#recent-posts .recent-post-item {
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  border-left: 3px solid var(--es-accent);
+  box-shadow: var(--es-shadow);
+  margin-bottom: 1.25rem;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+
+#recent-posts .recent-post-item:hover {
+  background: var(--es-card-hover);
+  box-shadow: var(--es-shadow-hover);
+  transform: translate(-1px, -1px);
+}
+
+/* Butterfly 给卡片写死了 height:18.8em，导致没封面的卡片下方一大片空白。
+   改成按内容自适应，封面用固定高度当缩略图。 */
+#recent-posts .recent-post-item {
+  height: auto !important;
+}
+
+#recent-posts .recent-post-item .post_cover {
+  width: 34%;
+  height: 190px;
+  flex-shrink: 0;
+}
+
+#recent-posts .recent-post-item .recent-post-info {
+  padding: 1.35rem 1.5rem;
+  align-self: center;
+}
+
+#recent-posts .recent-post-item .article-title {
+  font-family: var(--es-serif);
+  font-size: 1.32rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--es-ink);
+  transition: color 0.15s ease;
+}
+
+#recent-posts .recent-post-item .article-title:hover {
+  color: var(--es-accent);
+  text-decoration: none;
+}
+
+#recent-posts .recent-post-item .content {
+  font-size: 13.8px;
+  line-height: 1.75;
+  color: var(--es-ink-2);
+  margin-top: 0.55rem;
+}
+
+#recent-posts .article-meta-wrap {
+  font-family: var(--es-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  color: var(--es-ink-3);
+  margin-top: 0.35rem;
+}
+
+#recent-posts .article-meta-wrap a {
+  color: var(--es-ink-3);
+}
+
+#recent-posts .article-meta-wrap a:hover {
+  color: var(--es-accent);
+}
+
+/* 封面图：直角、去掉默认的缩放动效 */
+#recent-posts .post_cover img {
+  transition: transform 0.35s ease;
+}
+
+#recent-posts .recent-post-item:hover .post_cover img {
+  transform: scale(1.02);
+}
+
+/* ---------- 侧栏卡片 ---------- */
+/* 卡片样式要挂在 .es-rail 上：JS 把卡片搬进左右栏后会删掉 :is(#aside-content, .es-rail)，
+   只写 :is(#aside-content, .es-rail) 的话所有选择器都会失配，侧栏就没有框了。
+   两个选择器都保留，JS 没跑起来时也能正常显示。 */
+:is(#aside-content, .es-rail) .card-widget {
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  border-radius: var(--es-radius);
+  box-shadow: var(--es-shadow);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1.1rem;
+}
+
+.es-rail .card-widget:last-child {
+  margin-bottom: 0;
+}
+
+:is(#aside-content, .es-rail) .card-info .author-info-name {
+  font-family: var(--es-serif);
+  font-weight: 700;
+  color: var(--es-ink);
+}
+
+:is(#aside-content, .es-rail) .card-info .author-info-description {
+  color: var(--es-ink-3);
+  font-size: 12.5px;
+}
+
+:is(#aside-content, .es-rail) .item-headline {
+  font-family: var(--es-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--es-ink-3);
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--es-line-soft);
+  margin-bottom: 0.7rem;
+}
+
+:is(#aside-content, .es-rail) .item-headline i {
+  color: var(--es-accent);
+}
+
+:is(#aside-content, .es-rail) .aside-list .aside-list-item .content .title,
+:is(#aside-content, .es-rail) .card-category-list-name,
+:is(#aside-content, .es-rail) .card-archive-list-date {
+  color: var(--es-ink-2);
+  font-size: 13px;
+}
+
+:is(#aside-content, .es-rail) a:hover {
+  color: var(--es-accent);
+}
+
+:is(#aside-content, .es-rail) .card-category-list-count,
+:is(#aside-content, .es-rail) .card-archive-list-count {
+  font-family: var(--es-mono);
+  font-size: 11.5px;
+  color: var(--es-ink-3);
+}
+
+/* 标签云：小方块，不要药丸形 */
+:is(#aside-content, .es-rail) .card-tag-cloud a,
+.tag-cloud-list a {
+  display: inline-block;
+  font-family: var(--es-mono);
+  font-size: 11.5px !important;
+  color: var(--es-ink-2) !important;
+  background: var(--es-accent-soft);
+  border: 1px solid var(--es-line-soft);
+  padding: 2px 8px;
+  margin: 0 5px 6px 0;
+  transition: all 0.15s ease;
+}
+
+:is(#aside-content, .es-rail) .card-tag-cloud a:hover,
+.tag-cloud-list a:hover {
+  color: #fffdf7 !important;
+  background: var(--es-accent);
+  border-color: var(--es-accent);
+}
+
+/* ---------- 三栏布局 ----------
+   Butterfly 只有一个侧栏，es-layout.js 会把卡片拆进左右两个 rail */
+.layout.es-three-col {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 1500px;
+}
+
+.layout.es-three-col > .es-rail {
+  flex-shrink: 0;
+  position: sticky;
+  top: 4.5rem;
+}
+
+.layout.es-three-col > .es-rail-left  { width: 232px; order: -1; }
+.layout.es-three-col > .es-rail-right { width: 268px; }
+
+.layout.es-three-col > #recent-posts,
+.layout.es-three-col > #post,
+.layout.es-three-col > #page,
+.layout.es-three-col > #archive,
+.layout.es-three-col > #tag,
+.layout.es-three-col > #category {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto !important;
+}
+
+
+/* 侧栏列表项：缩略图在左、标题日期在右。
+   Butterfly 默认按宽侧栏排版，直接塞进窄 rail 会把缩略图撑到 600px 以上。 */
+.es-rail .aside-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 0;
+}
+
+.es-rail .aside-list-item .thumbnail {
+  flex: 0 0 66px;
+  width: 66px !important;
+  height: 48px !important;
+  border-radius: 3px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.es-rail .aside-list-item .thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.es-rail .aside-list-item .content {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 !important;
+}
+
+.es-rail .aside-list-item .content .title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.es-rail .aside-list-item .content time {
+  display: block;
+  font-family: var(--es-mono);
+  font-size: 11px;
+  color: var(--es-ink-3);
+  margin-top: 2px;
+}
+
+/* 左栏的分类/标签：去掉项目符号，走紧凑列表 */
+.es-rail-left .card-category-list,
+.es-rail-left .card-archive-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.es-rail-left .card-category-list-item,
+.es-rail-left .card-archive-list-item {
+  list-style: none;
+}
+
+.es-rail-left .card-category-list-item::before,
+.es-rail-left .card-archive-list-item::before {
+  content: none;
+}
+
+.es-rail-left .card-category-list-link,
+.es-rail-left .card-archive-list-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.3rem 0;
+  font-size: 13px;
+}
+
+/* 左栏头像卡片：小一点，靠左排，不要居中的大圆 */
+.es-rail-left .card-info .avatar-img {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 0.6rem;
+}
+
+.es-rail-left .card-info .author-info-name {
+  font-size: 1.05rem;
+}
+
+@media screen and (max-width: 1200px) {
+  .layout.es-three-col > .es-rail-left { display: none; }
+}
+
+@media screen and (max-width: 900px) {
+  .layout.es-three-col { flex-direction: column; }
+  .layout.es-three-col > .es-rail { position: static; width: 100%; }
+}
+
+/* ---------- 创作热力图 ---------- */
+.es-heatmap-card {
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  border-radius: var(--es-radius);
+  box-shadow: var(--es-shadow);
+  padding: 1.1rem 1.3rem 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.es-heatmap-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.es-heatmap-title {
+  font-family: var(--es-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--es-ink);
+}
+
+.es-heatmap-sub,
+.es-heatmap-foot {
+  font-family: var(--es-mono);
+  font-size: 11px;
+  color: var(--es-ink-3);
+  margin-top: 2px;
+}
+
+.es-heatmap-total {
+  font-family: var(--es-mono);
+  font-size: 11.5px;
+  color: var(--es-ink-3);
+}
+
+.es-heatmap-total b {
+  font-size: 1.45rem;
+  color: var(--es-accent);
+  margin-right: 3px;
+}
+
+.es-heatmap-scroll {
+  overflow-x: auto;
+  /* 只写 overflow-x 会让 overflow-y 也变成 auto，冒出一条纵向滚动条 */
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  /* 方格总宽固定（53 周 × 13px），卡片更宽时整块居中，否则会明显偏左 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.es-heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(53, 13px);
+  margin-left: 22px;
+  font-family: var(--es-mono);
+  font-size: 10px;
+  color: var(--es-ink-3);
+  height: 15px;
+  line-height: 15px;
+}
+
+/* 每格只有 13px 宽，不加 nowrap 的话"9月"会被折成两行 */
+.es-heatmap-months span {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.es-heatmap-body {
+  display: flex;
+  gap: 6px;
+}
+
+.es-heatmap-dows {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  font-family: var(--es-mono);
+  font-size: 9.5px;
+  color: var(--es-ink-3);
+  width: 16px;
+}
+
+.es-heatmap-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 13px);
+  grid-auto-columns: 13px;
+  grid-auto-flow: column;
+}
+
+.es-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgba(27, 30, 28, 0.06);
+}
+
+.es-cell[data-l="1"] { background: rgba(194, 59, 34, 0.26); }
+.es-cell[data-l="2"] { background: rgba(194, 59, 34, 0.48); }
+.es-cell[data-l="3"] { background: rgba(194, 59, 34, 0.72); }
+.es-cell[data-l="4"] { background: var(--es-accent); }
+.es-cell-future { background: transparent; }
+
+.es-heatmap-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.7rem;
+}
+
+
+html[data-theme='dark'] .es-cell {
+  background: rgba(232, 230, 224, 0.08);
+}
+
+/* ---------- 本地时间 + 日历 ---------- */
+.es-clock-time {
+  font-family: var(--es-mono);
+  font-size: 2.35rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--es-accent);
+  line-height: 1.15;
+  text-align: center;
+  margin-top: 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.es-clock-date {
+  font-size: 13px;
+  color: var(--es-ink-2);
+  text-align: center;
+  margin-top: 0.3rem;
+}
+
+.es-cal {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--es-line-soft);
+}
+
+.es-cal-head {
+  font-family: var(--es-mono);
+  font-size: 11.5px;
+  color: var(--es-ink-3);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.es-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.es-cal-grid span {
+  font-family: var(--es-mono);
+  font-size: 11px;
+  line-height: 22px;
+  color: var(--es-ink-2);
+  border-radius: 3px;
+}
+
+.es-cal-dow {
+  color: var(--es-ink-3) !important;
+  font-size: 10.5px !important;
+}
+
+.es-cal-weekend {
+  color: var(--es-accent) !important;
+}
+
+.es-cal-today {
+  background: var(--es-accent);
+  color: #fffdf7 !important;
+  font-weight: 500;
+}
+
+/* ---------- 文章页 ---------- */
+#post,
+#page {
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  box-shadow: var(--es-shadow);
+}
+
+#post .post-title,
+#page .page-title {
+  font-family: var(--es-serif);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+#article-container {
+  font-size: 15.5px;
+  line-height: 1.85;
+  color: var(--es-ink);
+}
+
+#article-container h1,
+#article-container h2,
+#article-container h3,
+#article-container h4 {
+  font-family: var(--es-serif);
+  font-weight: 700;
+  color: var(--es-ink);
+}
+
+#article-container h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--es-line-soft);
+}
+
+/* Butterfly 默认在标题前加 # 号，改成朱红竖条 */
+#article-container h1::before,
+#article-container h2::before,
+#article-container h3::before,
+#article-container h4::before {
+  content: '' !important;
+  display: inline-block;
+  width: 3px;
+  height: 0.82em;
+  background: var(--es-accent);
+  margin-right: 0.5em;
+  vertical-align: -0.04em;
+  top: auto !important;
+  left: auto !important;
+  position: relative !important;
+}
+
+#article-container a {
+  color: var(--es-accent);
+  border-bottom: 1px solid rgba(194, 59, 34, 0.35);
+}
+
+#article-container a:hover {
+  border-bottom-color: var(--es-accent);
+}
+
+#article-container blockquote {
+  border-left: 3px solid var(--es-accent);
+  background: var(--es-accent-soft);
+  color: var(--es-ink-2);
+}
+
+#post .post-meta,
+#post .post-meta a {
+  font-family: var(--es-mono);
+  font-size: 12px;
+  color: var(--es-ink-3);
+}
+
+/* ---------- 代码 ---------- */
+#article-container code,
+figure.highlight,
+figure.highlight * {
+  font-family: var(--es-mono);
+}
+
+#article-container :not(figure) > code {
+  background: var(--es-accent-soft);
+  color: var(--es-accent-hover);
+  border: 1px solid var(--es-line-soft);
+  padding: 1px 5px;
+  font-size: 0.86em;
+}
+
+figure.highlight {
+  border: 1px solid var(--es-line-soft);
+  box-shadow: none;
+  font-size: 13px;
+}
+
+/* ---------- 页脚 ---------- */
+#footer {
+  background: var(--es-paper) !important;
+  border-top: 1px solid var(--es-line);
+}
+
+#footer-wrap,
+#footer-wrap a {
+  color: var(--es-ink-3);
+  font-size: 12.5px;
+}
+
+#footer-wrap a:hover {
+  color: var(--es-accent);
+}
+
+/* ---------- 按钮 / 分页 ---------- */
+.button,
+#pagination .page-number,
+#pagination .extend {
+  border-radius: var(--es-radius);
+  font-family: var(--es-mono);
+  font-size: 12.5px;
+}
+
+#pagination .page-number.current {
+  background: var(--es-accent) !important;
+  color: #fffdf7 !important;
+}
+
+/* ---------- 右下角工具条 ---------- */
+#rightside button,
+#rightside > div > button {
+  border-radius: var(--es-radius);
+  background: var(--es-card);
+  color: var(--es-ink-2);
+  border: 1px solid var(--es-line-soft);
+}
+
+#rightside button:hover {
+  background: var(--es-accent);
+  color: #fffdf7;
+}

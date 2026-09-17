@@ -1,6 +1,6 @@
 # --------------------------------------
-# Butterfly 主题覆盖配置（浅色极简，聚焦论文精读/学习笔记）
-# 只写与主题默认值不同的项，其余都用 themes/butterfly/_config.yml 的默认值
+# Butterfly 主题配置（覆盖 themes/butterfly/_config.yml 的默认值）
+# 视觉部分几乎全部由 source/css/custom.css 重写，这里只管结构和功能
 # 完整选项说明: https://butterfly.js.org/
 # --------------------------------------
 
@@ -11,45 +11,79 @@ menu:
   标签: /tags/ || fas fa-tags
   关于: /about/ || fas fa-user
 
-# 首页大图压缩成较矮的横幅，不要占满全屏，保持内容优先
-index_top_img_height: 400px
+# 全站不要大图 banner，直接进内容（参考站就是这样）
+# 封面图仍然会在首页卡片流里作为缩略图出现，只是不再铺成顶部大图
+disable_top_img: true
+
+# 首页文章排版：封面与信息左右交替
+index_layout: 3
+
+# 自动摘要，控制在两三行，卡片流才好看
+index_post_content:
+  method: 3
+  length: 120
 
 subtitle:
-  enable: true
+  enable: false
+
+# 侧栏头像（不设的话会用主题自带的蝴蝶图标）
+avatar:
+  img: https://raw.githubusercontent.com/EnterSuper/blog_picture/main/头像.jpg
   effect: false
-  source: false
-  sub: 论文精读 · 学习笔记
-
-# 首页文章排版：封面在上，信息在下，统一整洁的卡片网格
-index_layout: 4
-
-code_blocks:
-  theme: light
-  macStyle: true
 
 aside:
+  enable: true
+  position: right
   card_author:
     enable: true
+    description: 论文精读与学习笔记
     button:
       enable: true
       icon: fab fa-github
-      text: Follow Me
+      text: GitHub
       link: https://github.com/EnterSuper
-  # 去掉默认的占位公告卡片
   card_announcement:
     enable: false
+  card_recent_post:
+    enable: true
+    limit: 5
+  card_categories:
+    enable: true
+    limit: 8
+  card_tags:
+    enable: true
+    limit: 30
+    orderby: name
+    order: 1
+  card_archives:
+    enable: true
+  card_webinfo:
+    enable: true
+    post_count: true
+    last_push_date: true
+    # 不蒜子的全站访客/访问量是共享计数，数字大到没有意义，关掉
+    site_uv: false
+    site_pv: false
 
-# 本地搜索（配合 hexo-generator-searchdb），方便以后笔记多了能搜到
+# 文章页也不显示页面浏览量
+busuanzi:
+  site_uv: false
+  site_pv: false
+  page_pv: false
+
+code_blocks:
+  theme: light
+  macStyle: false
+  copy: true
+
 search:
   use: local_search
   local_search:
     preload: true
 
-# 暂不需要分享按钮，保持干净
 share:
   use:
 
-# 暂不接入评论系统
 comments:
   use:
 
@@ -58,3 +92,10 @@ math:
   per_page: true
   katex:
     copy_tex: true
+
+# 整站视觉重写
+inject:
+  head:
+    - <link rel="stylesheet" href="/css/custom.css">
+  bottom:
+    - <script src="/js/es-layout.js"></script>

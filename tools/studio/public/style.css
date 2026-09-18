@@ -196,3 +196,120 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .status.ok { background: #e9f7ef; color: #1e7e34; }
 .status.err { background: #fdeceb; color: var(--danger); }
+
+/* ---------- 封面选择 ---------- */
+.hint { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+.cover-picker {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cover-preview {
+  position: relative;
+  flex: 0 0 200px;
+  height: 124px;
+  border: 1px dashed #c9ced6;
+  border-radius: 6px;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cover-preview.is-drag {
+  border-color: var(--blue);
+  background: #eaf1fb;
+}
+
+.cover-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-empty {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+}
+
+.cover-badge {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 2px 7px;
+  font-size: 11px;
+  color: #fff;
+  background: rgba(20, 22, 26, 0.72);
+  border-radius: 4px;
+}
+
+.cover-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cover-side .hint { margin: 0; }
+
+.cover-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-cover {
+  padding: 7px 12px;
+  font-size: 13px;
+  background: #eef1f5;
+  color: var(--text);
+}
+
+.btn-cover:hover { background: #e2e6ec; }
+
+.btn-cover-clear { color: var(--danger); background: transparent; border: 1px solid var(--border); }
+.btn-cover-clear:hover { background: #fdeceb; }
+
+.cover-url-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.cover-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.cover-grid .hint { grid-column: 1 / -1; margin: 0; }
+
+.cover-thumb {
+  padding: 0;
+  height: 72px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #eef1f5;
+}
+
+.cover-thumb:hover { border-color: var(--blue); }
+
+.cover-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

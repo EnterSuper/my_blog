@@ -4,7 +4,6 @@ date: {{ date }}
 categories: 论文精读
 tags:
 cover:
-top_img:
 ---
 
 ### 论文信息

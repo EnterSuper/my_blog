@@ -7,11 +7,37 @@ const fs = require('fs')
 const path = require('path')
 const { exec, execFile } = require('child_process')
 const matter = require('gray-matter')
-const { uploadPostImages, findLocalImageRefs, POSTS_DIR } = require('../lib/images')
+const { uploadPostImages, findLocalImageRefs, resolveLocal, POSTS_DIR } = require('../lib/images')
 
 const PROJECT_ROOT = path.join(__dirname, '..', '..')
 const PUBLIC_DIR = path.join(__dirname, 'public')
 const PORT = process.env.PORT || 4321
+const ALLOWED_HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`])
+
+const IMAGE_MIME = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.bmp': 'image/bmp'
+}
+// SVG 故意不在列表里：它能内嵌脚本，从本面板同源提供会有 XSS 风险
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+
+function httpError (status, message) {
+  return Object.assign(new Error(message), { status })
+}
+
+// URL 里的文章名只能是单个文件名，不能带路径，防止 ../ 跳出 source/_posts
+function slugFrom (raw) {
+  const slug = decodeURIComponent(raw)
+  if (!slug || /[/\\\0]/.test(slug) || slug === '.' || slug === '..') {
+    throw httpError(400, '非法的文章名')
+  }
+  return slug
+}
 
 function listPosts () {
   const files = fs.readdirSync(POSTS_DIR).filter(f => f.endsWith('.md'))
@@ -30,7 +56,6 @@ function listPosts () {
       categories: data.categories || '',
       tags: Array.isArray(data.tags) ? data.tags : (data.tags ? [data.tags] : []),
       cover: data.cover || '',
-      top_img: data.top_img || '',
       localImages
     }
   // 按时间戳倒序。不能比较 String(date)：JS 日期字符串以星期开头
@@ -40,7 +65,7 @@ function listPosts () {
 
 function updatePostMeta (slug, fields) {
   const full = path.join(POSTS_DIR, `${slug}.md`)
-  if (!fs.existsSync(full)) throw new Error('文章不存在')
+  if (!fs.existsSync(full)) throw httpError(404, '文章不存在')
   const raw = fs.readFileSync(full, 'utf8')
   const parsed = matter(raw)
   const data = { ...parsed.data }
@@ -52,10 +77,45 @@ function updatePostMeta (slug, fields) {
       .map(t => t.trim())
       .filter(Boolean)
   }
-  if (fields.cover !== undefined) data.cover = fields.cover
-  if (fields.top_img !== undefined) data.top_img = fields.top_img
+  if (fields.cover !== undefined) {
+    if (fields.cover) data.cover = fields.cover
+    else delete data.cover
+  }
   const out = matter.stringify(parsed.content, data)
   fs.writeFileSync(full, out, 'utf8')
+}
+
+// 文章资源文件夹里现有的图片（Typora 贴图就存在这里），供挑选封面
+function listPostImages (slug) {
+  const dir = path.join(POSTS_DIR, slug)
+  if (!fs.existsSync(dir)) return []
+  const out = []
+  const walk = (d, depth) => {
+    for (const ent of fs.readdirSync(d, { withFileTypes: true })) {
+      const abs = path.join(d, ent.name)
+      if (ent.isDirectory() && depth < 2) walk(abs, depth + 1)
+      else if (ent.isFile() && IMAGE_MIME[path.extname(ent.name).toLowerCase()]) {
+        out.push(path.relative(POSTS_DIR, abs).split(path.sep).join('/'))
+      }
+    }
+  }
+  walk(dir, 0)
+  return out.sort()
+}
+
+// 把选中的本地图片存进文章资源文件夹，封面先记成本地相对路径；
+// 真正上传图床要等"上传并发布"，和正文图片同一时机，私人内容不会提前外传
+function saveCover (slug, filename, buffer) {
+  if (!fs.existsSync(path.join(POSTS_DIR, `${slug}.md`))) throw httpError(404, '文章不存在')
+  const ext = path.extname(filename || '').toLowerCase()
+  if (!IMAGE_MIME[ext]) throw httpError(400, '只支持 png / jpg / gif / webp / avif / bmp 图片')
+  const dir = path.join(POSTS_DIR, slug)
+  fs.mkdirSync(dir, { recursive: true })
+  const name = `cover-${Date.now()}${ext}`
+  fs.writeFileSync(path.join(dir, name), buffer)
+  const src = `${slug}/${name}`
+  updatePostMeta(slug, { cover: src })
+  return src
 }
 
 const POST_TYPES = new Set(['paper', 'note'])
@@ -63,8 +123,8 @@ const POST_TYPES = new Set(['paper', 'note'])
 // 用 execFile 而不是 exec，标题作为独立参数传给 hexo，不经过 shell 拼接，
 // 避免标题里出现 & ; ` 这类字符时被当成 shell 命令的一部分。
 function createPost (type, title) {
-  if (!POST_TYPES.has(type)) return Promise.reject(new Error('未知的文章类型'))
-  if (!title || !title.trim()) return Promise.reject(new Error('标题不能为空'))
+  if (!POST_TYPES.has(type)) return Promise.reject(httpError(400, '未知的文章类型'))
+  if (!title || !title.trim()) return Promise.reject(httpError(400, '标题不能为空'))
   return new Promise((resolve, reject) => {
     execFile('npx', ['hexo', 'new', type, title], {
       cwd: PROJECT_ROOT,
@@ -81,7 +141,7 @@ function createPost (type, title) {
 
 function openInApp (slug, target) {
   const full = path.join(POSTS_DIR, `${slug}.md`)
-  if (!fs.existsSync(full)) return Promise.reject(new Error('文章不存在'))
+  if (!fs.existsSync(full)) return Promise.reject(httpError(404, '文章不存在'))
   if (process.platform !== 'darwin') return Promise.reject(new Error('这个功能目前只支持 macOS'))
   const args = target === 'finder' ? ['-R', full] : ['-a', 'Typora', full]
   return new Promise((resolve, reject) => {
@@ -122,20 +182,32 @@ function sendJson (res, status, obj) {
   res.end(body)
 }
 
-function readBody (req) {
+function readRaw (req, limit) {
   return new Promise((resolve, reject) => {
-    let data = ''
-    req.on('data', chunk => { data += chunk })
-    req.on('end', () => {
-      if (!data) return resolve({})
-      try {
-        resolve(JSON.parse(data))
-      } catch (e) {
-        reject(e)
+    const chunks = []
+    let size = 0
+    req.on('data', chunk => {
+      size += chunk.length
+      if (size > limit) {
+        reject(httpError(413, '图片太大（上限 20MB）'))
+        req.destroy()
+        return
       }
+      chunks.push(chunk)
     })
+    req.on('end', () => resolve(Buffer.concat(chunks)))
     req.on('error', reject)
   })
+}
+
+async function readBody (req) {
+  const buf = await readRaw(req, 1024 * 1024)
+  if (!buf.length) return {}
+  try {
+    return JSON.parse(buf.toString('utf8'))
+  } catch (e) {
+    throw httpError(400, '请求体不是合法 JSON')
+  }
 }
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' }
@@ -153,11 +225,37 @@ function serveStatic (req, res, pathname) {
   fs.createReadStream(filePath).pipe(res)
 }
 
+// 面板里预览本地图片用，只放行 source/_posts 下的图片文件
+function serveAsset (res, rel) {
+  const abs = resolveLocal(rel)
+  const type = abs && IMAGE_MIME[path.extname(abs).toLowerCase()]
+  if (!type) {
+    res.writeHead(404)
+    res.end('Not found')
+    return
+  }
+  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' })
+  fs.createReadStream(abs).pipe(res)
+}
+
 const server = http.createServer(async (req, res) => {
+  // 防 DNS rebinding：只认本机地址
+  if (!ALLOWED_HOSTS.has(req.headers.host)) {
+    res.writeHead(403)
+    res.end('Forbidden')
+    return
+  }
+
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`)
   const pathname = url.pathname
 
   try {
+    // 写操作必须带自定义头。浏览器里其他网站跨域发不出这个头（会触发预检，
+    // 而本服务不返回任何 CORS 头），这样别的网页就没法偷偷触发发布/删除
+    if (req.method !== 'GET' && req.headers['x-studio'] !== '1') {
+      throw httpError(403, '缺少 X-Studio 请求头')
+    }
+
     if (pathname === '/api/posts' && req.method === 'GET') {
       return sendJson(res, 200, listPosts())
     }
@@ -169,9 +267,27 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, slug })
     }
 
+    if (pathname.startsWith('/asset/') && req.method === 'GET') {
+      return serveAsset(res, decodeURIComponent(pathname.slice('/asset/'.length)))
+    }
+
+    const imagesMatch = pathname.match(/^\/api\/posts\/([^/]+)\/images$/)
+    if (imagesMatch && req.method === 'GET') {
+      return sendJson(res, 200, listPostImages(slugFrom(imagesMatch[1])))
+    }
+
+    const coverMatch = pathname.match(/^\/api\/posts\/([^/]+)\/cover$/)
+    if (coverMatch && req.method === 'POST') {
+      const slug = slugFrom(coverMatch[1])
+      const filename = decodeURIComponent(req.headers['x-filename'] || '')
+      const buf = await readRaw(req, MAX_UPLOAD_BYTES)
+      if (!buf.length) throw httpError(400, '没有收到图片数据')
+      return sendJson(res, 200, { ok: true, src: saveCover(slug, filename, buf) })
+    }
+
     const openMatch = pathname.match(/^\/api\/posts\/([^/]+)\/open$/)
     if (openMatch && req.method === 'POST') {
-      const slug = decodeURIComponent(openMatch[1])
+      const slug = slugFrom(openMatch[1])
       const body = await readBody(req)
       await openInApp(slug, body.target)
       return sendJson(res, 200, { ok: true })
@@ -179,7 +295,7 @@ const server = http.createServer(async (req, res) => {
 
     const metaMatch = pathname.match(/^\/api\/posts\/([^/]+)\/meta$/)
     if (metaMatch && req.method === 'PUT') {
-      const slug = decodeURIComponent(metaMatch[1])
+      const slug = slugFrom(metaMatch[1])
       const body = await readBody(req)
       updatePostMeta(slug, body)
       return sendJson(res, 200, { ok: true })
@@ -187,7 +303,7 @@ const server = http.createServer(async (req, res) => {
 
     const publishMatch = pathname.match(/^\/api\/posts\/([^/]+)\/publish$/)
     if (publishMatch && req.method === 'POST') {
-      const slug = decodeURIComponent(publishMatch[1])
+      const slug = slugFrom(publishMatch[1])
       const imgResult = await uploadPostImages(slug)
       if (imgResult.total > 0 && imgResult.successCount < imgResult.total) {
         return sendJson(res, 207, {
@@ -203,7 +319,7 @@ const server = http.createServer(async (req, res) => {
 
     const postMatch = pathname.match(/^\/api\/posts\/([^/]+)$/)
     if (postMatch && req.method === 'DELETE') {
-      const slug = decodeURIComponent(postMatch[1])
+      const slug = slugFrom(postMatch[1])
       deletePost(slug)
       const log = await runDeployPipeline()
       return sendJson(res, 200, { ok: true, log })
@@ -215,7 +331,7 @@ const server = http.createServer(async (req, res) => {
 
     sendJson(res, 404, { ok: false, message: 'not found' })
   } catch (err) {
-    sendJson(res, 500, { ok: false, message: err.message, log: err.log || '' })
+    sendJson(res, err.status || 500, { ok: false, message: err.message, log: err.log || '' })
   }
 })
 

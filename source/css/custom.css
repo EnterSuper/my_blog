@@ -611,6 +611,30 @@ html[data-theme='dark'] .es-cell {
   box-shadow: var(--es-shadow);
 }
 
+/* 文章页：不要左右侧栏，正文居中成单栏阅读版面（es-layout.js 加 es-post-mode） */
+.layout.es-post-mode {
+  display: block;
+  max-width: 860px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.layout.es-post-mode > #post {
+  width: 100% !important;
+}
+
+/* Butterfly 这里的 padding 是 0，标题和正文直接贴着卡片边缘 */
+#post {
+  padding: 3.2rem 3.6rem 2.6rem;
+}
+
+#post-info {
+  padding-bottom: 1.4rem;
+  margin-bottom: 2.2rem;
+  border-bottom: 1px solid var(--es-line-soft);
+}
+
 #post .post-title,
 #page .page-title {
   font-family: var(--es-serif);
@@ -618,10 +642,38 @@ html[data-theme='dark'] .es-cell {
   letter-spacing: -0.005em;
 }
 
-#article-container {
-  font-size: 15.5px;
-  line-height: 1.85;
+#post .post-title {
+  font-size: 2.1rem;
+  line-height: 1.3;
+  margin: 0 0 0.9rem;
+  padding: 0;
+  text-align: left;
   color: var(--es-ink);
+}
+
+#post #post-meta {
+  font-family: var(--es-mono);
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--es-ink-3);
+  text-align: left;
+}
+
+#post #post-meta a { color: var(--es-ink-3); }
+#post #post-meta a:hover { color: var(--es-accent); }
+
+#article-container {
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--es-ink);
+}
+
+#article-container p {
+  margin: 0 0 1.15em;
+}
+
+#article-container > :first-child {
+  margin-top: 0 !important;
 }
 
 #article-container h1,
@@ -631,12 +683,144 @@ html[data-theme='dark'] .es-cell {
   font-family: var(--es-serif);
   font-weight: 700;
   color: var(--es-ink);
+  padding-left: 0;
+  line-height: 1.45;
 }
 
 #article-container h2 {
-  padding-bottom: 0.3em;
+  font-size: 1.45rem;
+  margin: 2.4em 0 0.9em;
+  padding-bottom: 0.35em;
   border-bottom: 1px solid var(--es-line-soft);
 }
+
+#article-container h3 {
+  font-size: 1.2rem;
+  margin: 1.9em 0 0.7em;
+}
+
+#article-container h4 {
+  font-size: 1.05rem;
+  margin: 1.6em 0 0.6em;
+}
+
+#post .post-copyright,
+#post .tag_share,
+#post #pagination {
+  margin-top: 2.6rem;
+}
+
+@media screen and (max-width: 768px) {
+  #post { padding: 1.8rem 1.25rem 1.6rem; }
+  #post .post-title { font-size: 1.6rem; }
+}
+
+/* ---------- 文章页浮动目录（可收起） ---------- */
+.es-toc {
+  position: fixed;
+  top: 96px;
+  left: calc(50% + 446px);   /* 放在 860px 正文栏右侧的留白里 */
+  width: 228px;
+  z-index: 20;
+}
+
+.es-toc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 34px;
+  padding: 0.4rem 0.8rem;
+  font-family: var(--es-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--es-ink-2);
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  border-radius: var(--es-radius);
+  box-shadow: var(--es-shadow);
+  cursor: pointer;
+}
+
+.es-toc-toggle i { color: var(--es-accent); }
+.es-toc-toggle:hover { color: var(--es-accent); }
+
+/* 主题在窄屏会把 #card-toc 做成隐藏的浮层，这里统一改成普通块 */
+.es-toc #card-toc {
+  position: static !important;
+  transform: none !important;
+  opacity: 1 !important;
+  display: block !important;
+  width: auto !important;
+  max-height: calc(100vh - 170px);
+  overflow-y: auto;
+  margin: 0.6rem 0 0;
+  padding: 0.9rem 1rem;
+  background: var(--es-card);
+  border: 1px solid var(--es-line-soft);
+  border-radius: var(--es-radius);
+  box-shadow: var(--es-shadow);
+}
+
+.es-toc.is-collapsed #card-toc { display: none !important; }
+
+/* 按钮上已经写了"目录"；卡片自带的标题和滚动百分比（那个"0"）是重复信息 */
+.es-toc #card-toc .item-headline,
+.es-toc #card-toc .toc-percentage {
+  display: none;
+}
+
+/* 去掉 ol 自带的序号，避免和主题的编号叠成"1. 1. 题意" */
+.es-toc #card-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.es-toc #card-toc ol ol { padding-left: 0.9rem; }
+
+.es-toc #card-toc .toc-link {
+  display: block;
+  padding: 0.22rem 0 0.22rem 0.7rem;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--es-ink-2);
+  border-left: 2px solid transparent;
+}
+
+.es-toc #card-toc .toc-link:hover { color: var(--es-accent); }
+
+.es-toc #card-toc .toc-link.active {
+  color: var(--es-accent);
+  background: var(--es-accent-soft);
+  border-left-color: var(--es-accent);
+}
+
+.es-toc #card-toc .toc-number {
+  font-family: var(--es-mono);
+  font-size: 11px;
+  color: var(--es-ink-3);
+  margin-right: 0.35rem;
+}
+
+/* 右侧留白放不下时，改贴屏幕右上角，展开后浮在正文上方 */
+@media screen and (max-width: 1439px) {
+  .es-toc {
+    left: auto;
+    right: 16px;
+    top: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .es-toc #card-toc {
+    width: 260px !important;
+    max-height: 60vh;
+  }
+}
+
+/* 主题自带的移动端目录按钮和上面的重复了 */
+#mobile-toc-button { display: none !important; }
 
 /* Butterfly 默认在标题前加 # 号，改成朱红竖条 */
 #article-container h1::before,

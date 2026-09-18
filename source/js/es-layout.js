@@ -5,6 +5,47 @@
 (function () {
   'use strict'
 
+  /* ---------- 0. 文章页：单栏阅读 + 可收起的目录 ---------- */
+  const TOC_KEY = 'es-toc-collapsed'
+
+  function buildPostView () {
+    const layout = document.querySelector('.layout')
+    const aside = document.querySelector('#aside-content')
+    if (!layout || !document.querySelector('#post')) return false
+    layout.classList.add('es-post-mode')
+
+    const toc = aside && aside.querySelector('#card-toc')
+    if (toc) {
+      const wrap = document.createElement('nav')
+      wrap.className = 'es-toc'
+      wrap.setAttribute('aria-label', '文章目录')
+      wrap.innerHTML =
+        '<button type="button" class="es-toc-toggle" aria-expanded="true">' +
+          '<i class="fas fa-list-ul"></i><span>目录</span>' +
+        '</button>'
+      wrap.appendChild(toc)                 // 移动而不是复制，主题的滚动高亮仍然生效
+      document.body.appendChild(wrap)
+
+      const btn = wrap.querySelector('.es-toc-toggle')
+      const setCollapsed = c => {
+        wrap.classList.toggle('is-collapsed', c)
+        btn.setAttribute('aria-expanded', String(!c))
+      }
+      let saved = null
+      try { saved = localStorage.getItem(TOC_KEY) } catch (e) {}
+      // 没记录过偏好时：宽屏默认展开，窄屏默认收起（否则会盖住正文）
+      setCollapsed(saved !== null ? saved === '1' : window.innerWidth < 1440)
+      btn.addEventListener('click', () => {
+        const c = !wrap.classList.contains('is-collapsed')
+        setCollapsed(c)
+        try { localStorage.setItem(TOC_KEY, c ? '1' : '0') } catch (e) {}
+      })
+    }
+
+    if (aside) aside.remove()
+    return true
+  }
+
   /* ---------- 1. 三栏布局 ---------- */
   function buildRails () {
     const layout = document.querySelector('.layout')
@@ -195,6 +236,8 @@
   }
 
   function init () {
+    // 文章页只要干净的阅读栏，不挂左右侧栏和时钟
+    if (buildPostView()) return
     buildRails()
     initHeatmap()
     buildClockCard()
